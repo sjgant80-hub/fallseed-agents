@@ -357,6 +357,7 @@ async function loadChainHead() { const h = await idbGet('config', 'chainHead'); 
 let SEED = JSON.parse(JSON.stringify(SEED_DEFAULT));
 
 async function loadAll() {
+  await __loadStoredFlavour && __loadStoredFlavour();
   if (!db) await openDB();
   await loadChainHead();
   state.providerConfig = await idbGet('config', 'providerConfig') || {};
@@ -429,6 +430,40 @@ async function crossSeedRequest(target, kind, payload, opts) {
 }
 window.crossSeedRequest = crossSeedRequest;
 
+// ─── Flavour pull from fallrecall (2026-06-21) ──────────
+window.__flavourProfile = null;
+window.__flavourLoadedAt = null;
+async function pullFlavourFromRecall() {
+  try {
+    if (typeof crossSeedRequest !== 'function') { toast('mesh not ready · refresh + try again', true); return; }
+    toast('asking fallrecall for your flavour…');
+    const resp = await crossSeedRequest('fallrecall', 'flavour-summary', {}, { timeoutMs: 4000 });
+    if (!resp) { toast('no reply from fallrecall', true); return; }
+    if (!resp.available) { toast('fallrecall has no profile yet · analyse some conversations there first', true); return; }
+    window.__flavourProfile = resp.profile;
+    window.__flavourShortPrompt = resp.shortPrompt || null;
+    window.__flavourLoadedAt = Date.now();
+    try { await idbPut('config', { profile: resp.profile, shortPrompt: resp.shortPrompt, loadedAt: window.__flavourLoadedAt }, 'flavour'); } catch(e) {}
+    toast('✓ flavour pulled · ' + (resp.profile?.voiceNotes?.length||0) + ' voice notes loaded');
+    if (typeof render === 'function') render();
+  } catch (e) {
+    if (e.message === 'timeout') toast('fallrecall not detected on this origin · open it in another tab first', true);
+    else toast('pull failed: ' + e.message, true);
+  }
+}
+async function __loadStoredFlavour() {
+  try {
+    const stored = await idbGet('config', 'flavour');
+    if (stored) {
+      window.__flavourProfile = stored.profile;
+      window.__flavourShortPrompt = stored.shortPrompt;
+      window.__flavourLoadedAt = stored.loadedAt;
+    }
+  } catch(e) {}
+}
+window.pullFlavourFromRecall = pullFlavourFromRecall;
+
+
 async function autoDetectLocal() {
   state.autoDetected = [];
   await Promise.all([
@@ -453,7 +488,11 @@ function renderCascadeTrace() {
 async function cascadeChat(prompt, opts) {
   opts = opts || {};
   const onChunk = opts.onChunk || (()=>{});
-  const system = opts.system || SEED.buildPromptSystem || 'You are a helpful assistant.';
+  let system = opts.system || SEED.buildPromptSystem || 'You are a helpful assistant.';
+  // Prepend user flavour if available (sovereignty: matches user voice without depending on the lab that captured it)
+  if (window.__flavourShortPrompt && !opts.skipFlavour) {
+    system = '── USER FLAVOUR (from fallrecall) ──\n' + window.__flavourShortPrompt + '\n── END FLAVOUR ──\n\n' + system;
+  }
   const elig = eligibleProviders();
   if (!elig.length) throw new Error('No providers enabled. Configure one in LLM Providers.');
   trace(`cascade starting · ${elig.length} eligible`);
@@ -946,7 +985,16 @@ async function renderInspect(main) {
   main.innerHTML = `
     <div class="section-h"><h2>Inspect</h2></div>
     <div class="inspect-grid">
-      <div class="inspect-card"><div class="num">${SEED.manifest.prime}</div><div class="lbl">Seed prime</div></div>
+      <div class="inspect-card"><div class="num">${SEED.manifest.prime}</div>
+    <div class="card" style="margin-top:18px">
+      <h3>Flavour from fallrecall</h3>
+      <p style="font-size:12px;color:var(--cream-dim);margin-bottom:10px">Pull your analysed flavour profile (voice, interests, preferences, anti-prefs) from <a href="https://sjgant80-hub.github.io/fallrecall/" target="_blank" rel="noopener" style="color:var(--brass)">fallrecall</a>. If fallrecall is open on this origin, the pull happens instantly via the cross-seed mesh.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn brass sm" onclick="pullFlavourFromRecall()">⌬ pull flavour →</button>
+        <a href="https://sjgant80-hub.github.io/fallrecall/" target="_blank" rel="noopener" class="btn sm ghost">open fallrecall ↗</a>
+      </div>
+      <div id="flavourStatus" style="font-family:var(--mono);font-size:11px;color:var(--cream-muted);letter-spacing:.04em">${(function(){if(!window.__flavourProfile)return '<span style="color:var(--cream-muted)">no profile loaded · click pull above (fallrecall must be open in another tab)</span>'; const p=window.__flavourProfile; return '<span style=\"color:var(--green)\">✓ loaded ' + new Date(window.__flavourLoadedAt).toLocaleString() + '</span><br>' + (p.voiceNotes?.length||0) + ' voice notes · ' + (p.recurringInterests?.length||0) + ' interests · ' + (p.preferences?.length||0) + ' preferences · ' + (p.antiPreferences?.length||0) + ' anti-prefs';})()}</div>
+    </div><div class="lbl">Seed prime</div></div>
       <div class="inspect-card"><div class="num">L${SEED.manifest.level}</div><div class="lbl">Seed level</div></div>
       <div class="inspect-card"><div class="num">${Object.keys(SEED.agentRoles).length}</div><div class="lbl">Roles loaded</div></div>
       <div class="inspect-card"><div class="num">${ag}</div><div class="lbl">Agents spawned</div></div>
