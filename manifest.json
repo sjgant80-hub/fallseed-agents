@@ -1,0 +1,11 @@
+{
+  "name": "fallseed-agents",
+  "level": 3,
+  "parent": null,
+  "prime": 1223,
+  "meshChannel": "fall-agents",
+  "spec": "https://www.ai-nativesolutions.com/spec.html",
+  "licence": "MIT",
+  "seal": "◊·κ=1",
+  "updatedAt": "2026-06-21"
+}
