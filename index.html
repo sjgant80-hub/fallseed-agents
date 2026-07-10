@@ -1483,5 +1483,24 @@ boot().catch(e => { console.error(e); document.body.insertAdjacentHTML('beforeen
 <!-- KCC_JOBS_HOOK v1 -->
 <a id="kcc-jobs-link" href="https://sjgant80-hub.github.io/kcc-jobs/" target="_blank" rel="noopener" title="This agent can bid for KCC-denominated jobs on the agent economy marketplace" style="position:fixed;bottom:14px;right:14px;z-index:9998;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:3px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;cursor:pointer;border:1px solid #c08a3a;color:#c08a3a;background:rgba(10,10,15,.7);box-shadow:0 4px 14px rgba(0,0,0,.4);text-decoration:none" onmouseover="this.style.background='#c08a3a';this.style.color='#0a0a0a'" onmouseout="this.style.background='rgba(10,10,15,.7)';this.style.color='#c08a3a'">◊ kcc-jobs · agent marketplace</a>
 <!-- /KCC_JOBS_HOOK -->
+
+
+<!-- ═══════════════════════ AUTOPILOT · fall-autopilot-kit ═══════════════════════ -->
+<script type="module">
+  try {
+    const { installAutopilot } = await import('https://sjgant80-hub.github.io/fall-autopilot-kit/src/autopilot.js');
+    const manifestRes = await fetch('https://sjgant80-hub.github.io/fall-autopilot-kit/manifests/fallseed-agents.json');
+    const manifest = await manifestRes.json();
+    manifest.actions = manifest.actions.map(a => ({ ...a, run: async (params) => {
+      const fn = window._app?.[a.id];
+      if (typeof fn === 'function') return fn(params);
+      alert('Autopilot proposes: ' + a.name + ' · params: ' + JSON.stringify(params) + '\n\nThis tool has not yet implemented the ' + a.id + ' handler. Proposal logged to audit.');
+      return { stub: true, action: a.id, params };
+    }}));
+    manifest.state = () => ({ ...(window._app || {}), now: new Date().toISOString() });
+    installAutopilot(manifest);
+  } catch (e) { console.warn('[autopilot] init failed:', e); }
+</script>
+
 </body>
 </html>
