@@ -147,22 +147,19 @@ main{padding:24px 32px 80px;overflow-y:auto;max-width:1300px;margin:0 auto;width
     'llama-3b':  { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',   size: '~2GB',   label: '3B · balanced · default · most laptops' },
     'qwen-7b':   { id: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',     size: '~5GB',   label: '7B · capable · needs decent GPU (M-series Mac / 8GB+ VRAM)' },
     'llama-8b':  { id: 'Llama-3.1-8B-Instruct-q4f16_1-MLC',   size: '~5GB',   label: '8B · common · needs decent GPU' },
-    'llama-70b': { id: 'Llama-3.1-70B-Instruct-q4f16_1-MLC',  size: '~40GB',  label: '70B · frontier · needs serious GPU + 64GB+ RAM' },
-  };
+    'llama-70b': { id: 'Llama-3.1-70B-Instruct-q4f16_1-MLC',  size: '~40GB',  label: '70B · frontier · needs serious GPU + 64GB+ RAM' }};
   const DEFAULT_MODEL = 'llama-3b';
 
   const T3_PROVIDERS = {
     anthropic: { label: 'Anthropic Claude', models: ['claude-sonnet-4-5','claude-opus-4-7','claude-haiku-4-5'], default: 'claude-sonnet-4-5', url: 'https://api.anthropic.com/v1/messages' },
     openai:    { label: 'OpenAI',           models: ['gpt-4o','gpt-4o-mini','o1-mini'],                          default: 'gpt-4o-mini',      url: 'https://api.openai.com/v1/chat/completions' },
-    google:    { label: 'Google Gemini',    models: ['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash-exp'], default: 'gemini-1.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' },
-  };
+    google:    { label: 'Google Gemini',    models: ['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash-exp'], default: 'gemini-1.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' }};
 
   // ─── State ───────────────────────────────────────────────────────
   const STATE = {
     config: loadConfig(),
     ai: { ready: false, loading: false, progress: 0, engine: null, model: null },
-    mesh: { active: false, peers: new Map(), bc: null, signal: null },
-  };
+    mesh: { active: false, peers: new Map(), bc: null, signal: null }};
 
   function loadConfig() {
     try { return JSON.parse(localStorage.getItem('fall-kit.config') || '{}'); }
@@ -229,8 +226,7 @@ main{padding:24px 32px 80px;overflow-y:auto;max-width:1300px;margin:0 auto;width
     if (tier === 'T2' && STATE.ai.ready && STATE.ai.engine) {
       const r = await STATE.ai.engine.chat.completions.create({
         messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
-        max_tokens: maxTokens,
-      });
+        max_tokens: maxTokens});
       return r.choices[0].message.content;
     }
     if (tier === 'T3' && STATE.config.api_key && STATE.config.api_provider) {
@@ -247,8 +243,7 @@ main{padding:24px 32px 80px;overflow-y:auto;max-width:1300px;margin:0 auto;width
       const r = await fetch(T3_PROVIDERS.anthropic.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: maxTokens, system: sys, messages: [{ role: 'user', content: msg }] }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens, system: sys, messages: [{ role: 'user', content: msg }] })});
       if (!r.ok) throw new Error('Anthropic ' + r.status + ': ' + (await r.text()).slice(0, 200));
       const j = await r.json();
       return j.content[0].text;
@@ -257,8 +252,7 @@ main{padding:24px 32px 80px;overflow-y:auto;max-width:1300px;margin:0 auto;width
       const r = await fetch(T3_PROVIDERS.openai.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + key },
-        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'system', content: sys }, { role: 'user', content: msg }] }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'system', content: sys }, { role: 'user', content: msg }] })});
       if (!r.ok) throw new Error('OpenAI ' + r.status);
       const j = await r.json();
       return j.choices[0].message.content;
@@ -267,8 +261,7 @@ main{padding:24px 32px 80px;overflow-y:auto;max-width:1300px;margin:0 auto;width
       const r = await fetch(T3_PROVIDERS.google.url + model + ':generateContent?key=' + encodeURIComponent(key), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: sys + '\n\n---\n\n' + msg }] }], generationConfig: { maxOutputTokens: maxTokens } }),
-      });
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: sys + '\n\n---\n\n' + msg }] }], generationConfig: { maxOutputTokens: maxTokens } })});
       if (!r.ok) throw new Error('Google ' + r.status);
       const j = await r.json();
       return j.candidates[0].content.parts[0].text;
@@ -509,8 +502,7 @@ main{padding:24px 32px 80px;overflow-y:auto;max-width:1300px;margin:0 auto;width
     openMint: openMint,  // v1.2 · launch kcc-mint with this seed prefilled as parent
     MODELS: WEBLLM_MODELS,
     PROVIDERS: T3_PROVIDERS,
-    state: STATE,
-  };
+    state: STATE};
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -576,8 +568,7 @@ const SEED_DEFAULT = {
         { title: 'Draft a follow-up sequence', prompt: 'Given that the prospect did X, draft a 3-touch follow-up sequence with timing (e.g. +3 days, +7 days, +14 days). Each touch under 80 words, single ask, varying angle (value / proof / honesty).' },
         { title: 'Prep for a demo', prompt: 'Given the prospect context, output a demo agenda: (1) 5 questions to ask in first 5 min, (2) 3 specific scenarios to show, (3) 3 objections likely + responses, (4) close-the-meeting ask.' },
         { title: 'Draft a proposal', prompt: 'Given the scope and budget, draft a proposal with: executive summary (50 words), deliverables (bullet), timeline (gantt-style text), price + payment terms, assumptions + exclusions, acceptance criteria.' },
-        { title: 'Win/loss analysis on a deal', prompt: 'Given the deal history I provide, write a 200-word win/loss analysis: what worked, what failed, what to change next time.' },
-      ],
+        { title: 'Win/loss analysis on a deal', prompt: 'Given the deal history I provide, write a 200-word win/loss analysis: what worked, what failed, what to change next time.' }],
       schedule: 'on-demand · daily morning brief recommended',
       inputContext: 'Pipeline CRM data, recent emails, prospect notes, call transcripts.'
     },
@@ -591,8 +582,7 @@ const SEED_DEFAULT = {
         { title: 'Competitor analysis on [company]', prompt: 'Output: positioning (1 sentence), ICP (1 sentence), pricing model, top 3 product features, top 3 weaknesses, the move I should make in response.' },
         { title: 'Trend monitoring digest', prompt: 'Given the topic, list the 5 most recent meaningful developments (last 30-90 days), what they mean, and what I should do about each.' },
         { title: 'Synthesise these notes into a paragraph', prompt: 'Take my notes and produce one tight paragraph (150 words max) that captures the through-line, not a summary of each note.' },
-        { title: 'Adversarial critique of my draft', prompt: 'Steel-man the opposing view to what I have written. List 5 specific weaknesses, the strongest reframe, and the one revision that would defuse most attacks.' },
-      ],
+        { title: 'Adversarial critique of my draft', prompt: 'Steel-man the opposing view to what I have written. List 5 specific weaknesses, the strongest reframe, and the one revision that would defuse most attacks.' }],
       schedule: 'on-demand · weekly digest recommended',
       inputContext: 'Papers (PDFs / abstracts), web articles, notes, draft documents.'
     },
@@ -606,8 +596,7 @@ const SEED_DEFAULT = {
         { title: 'Draft a long-form post', prompt: 'For the topic I provide, draft 600-900 words. Open with concrete moment, develop a single argument, finish with a non-obvious takeaway. No headers; just paragraphs.' },
         { title: 'Audience segmentation pass', prompt: 'From the data / notes I share, propose 3-5 distinct audience segments. For each: who they are, what they care about, what message lands.' },
         { title: 'SEO topic cluster', prompt: 'For [seed topic], propose: 1 pillar article (50-word brief), 8 cluster article briefs, internal-link plan.' },
-        { title: 'Newsletter issue', prompt: 'Draft a newsletter issue from the materials I provide: subject line (8-12 words), opener (60 words), 3 substantive sections, single closing thought, 1 CTA.' },
-      ],
+        { title: 'Newsletter issue', prompt: 'Draft a newsletter issue from the materials I provide: subject line (8-12 words), opener (60 words), 3 substantive sections, single closing thought, 1 CTA.' }],
       schedule: 'on-demand · weekly content brief recommended',
       inputContext: 'Brand voice notes, product positioning, audience research, past performing content.'
     },
@@ -621,8 +610,7 @@ const SEED_DEFAULT = {
         { title: 'Draft a resolution reply', prompt: 'Confirm the issue, explain the fix in plain language, give a verification step, ask if anything else.' },
         { title: 'Surface KB articles', prompt: 'Given the issue I describe, propose the 3 most likely existing knowledge-base articles to send. If none exist, propose the 1 KB article that should be written.' },
         { title: 'Escalation note', prompt: 'For this ticket, write a 4-sentence handover to engineering: what happened, what was tried, what the customer wants, what I think is needed.' },
-        { title: 'Weekly support pattern review', prompt: 'Given the past 7 days of tickets, surface: top 3 recurring themes, 1 product change that would reduce volume, 1 KB article that needs writing.' },
-      ],
+        { title: 'Weekly support pattern review', prompt: 'Given the past 7 days of tickets, surface: top 3 recurring themes, 1 product change that would reduce volume, 1 KB article that needs writing.' }],
       schedule: 'on-demand · hourly during business hours suggested',
       inputContext: 'Ticket text, customer history, product KB, error logs, recent changelog.'
     },
@@ -636,8 +624,7 @@ const SEED_DEFAULT = {
         { title: 'Retrospective notes', prompt: 'From the discussion I paste, structure into: kept-doing, stop-doing, start-doing, 3 concrete commitments with owners.' },
         { title: 'Blocker triage', prompt: 'For each blocker I list, output: severity, who can unblock, what specifically they need from us, when it has to be resolved by.' },
         { title: 'Meeting prep brief', prompt: 'Given the meeting topic + attendees, output: 3 decisions we need, 3 questions to ask, 5-min agenda, who-talks-when.' },
-        { title: 'Decision log entry', prompt: 'For the decision I describe, write a structured log entry: context, options considered, decision, rationale, owner, review date.' },
-      ],
+        { title: 'Decision log entry', prompt: 'For the decision I describe, write a structured log entry: context, options considered, decision, rationale, owner, review date.' }],
       schedule: 'on-demand · daily standup-time recommended',
       inputContext: 'Team updates, project tracker, calendar, recent decisions.'
     },
@@ -651,8 +638,7 @@ const SEED_DEFAULT = {
         { title: 'Weekly review', prompt: 'Produce: what I shipped, what slipped + why, what I learned, what I want to change next week, 1 thing I\'m proud of.' },
         { title: 'Calendar audit', prompt: 'Given next week, surface: meetings I should cancel/decline, blocks I should defend, where I have no deep-work time, recommended reshuffle.' },
         { title: 'Decide for me', prompt: 'Given the decision I describe + the options, write: my likely framing, the option I\'d normally avoid, the question I should answer before deciding, recommended next step.' },
-        { title: 'End-of-day reflection prompt', prompt: 'Three questions tailored to today\'s context that would surface what mattered, not what I checked off.' },
-      ],
+        { title: 'End-of-day reflection prompt', prompt: 'Three questions tailored to today\'s context that would surface what mattered, not what I checked off.' }],
       schedule: 'on-demand · morning brief + evening reflection recommended',
       inputContext: 'Calendar, inbox, task list, journal entries, last week\'s review.'
     }
