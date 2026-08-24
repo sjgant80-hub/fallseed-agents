@@ -1183,6 +1183,16 @@ async function renderTasks(main) {
   `;
   $('#taskAgent').addEventListener('change', e => { state.selectedAgent = e.target.value; render(); });
 }
+window.openAgentTaskRunner = async function(agentId) {
+  const a = (await idbGetAll("agents")).find(x => x.id === agentId);
+  if (!a) { toast("Agent not found"); return; }
+  const r = SEED.agentRoles[a.role];
+  const tasks = (r && r.tasks) || [];
+  openModal((r && r.glyph ? r.glyph + " " : "") + esc(a.name) + " · run a task", tasks.length
+    ? "<p style=\"color:var(--cream-dim);font-size:12px;margin-bottom:10px\">Pick a task to run through the cascade.</p>" +
+      tasks.map((t, i) => "<button class=\"btn ghost sm\" style=\"display:block;width:100%;text-align:left;margin-bottom:6px\" onclick=\"openRunTask('" + agentId + "', " + i + ")\">" + esc(t.title) + "</button>").join("")
+    : "<p style=\"color:var(--cream-dim)\">This role has no predefined tasks.</p>");
+};
 window.openRunTask = async function(agentId, taskIdx) {
   const a = (await idbGetAll('agents')).find(x => x.id === agentId);
   const r = SEED.agentRoles[a.role];
