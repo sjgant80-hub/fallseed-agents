@@ -38,7 +38,7 @@ Welcome · Roles · My agents · Tasks · Runs · Schedule · Build · LLM Provi
 
 ## Cosmology
 
-Prime **1223**, spine-clean mod 127 = 80 = 2⁴·5. Seed level **3**. Mesh channel **`fall-agents`**. Root seed (parent: null). Seal **◊·κ=1**.
+Prime **1223**, spine-clean mod 127 = 80 = 2⁴·5. Seed level **3**. Mesh channel **`fall-agents`**. Root seed (parent: null). Seal ****.
 
 ## Disclaimer
 
